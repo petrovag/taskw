@@ -1,2 +1,2 @@
 # taskw
-Taskwarriar and timewarrior widget for awesome
+Taskwarrior and timewarrior widget for awesome
