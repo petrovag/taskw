@@ -53,12 +53,17 @@ end
 taskcontextes({Loh = '#FF2222', Science = '#4444FF', hardandsoft = '#666666', rest = '#00FF00' })
 
 
-------------------------------------------
--- Build widget                         --
-------------------------------------------
-function wtask()
+-----------------------------------------------------
+-- Build Container widget with radialprogressbar   --
+-----------------------------------------------------
+function wtask(args)
 	local worktime = 60
-	local widget = wibox.widget{
+	local factor = 15/60.
+	if args ~= nil then
+		if args["worktime"] ~= nil then worktime = args["worktime"] end
+		if args["factor"] ~= nil then worktime = args["factor"] end
+	end
+	local widget = wibox.widget{	 
 		{   
 			id		= "taskname",
 			text   = "<>",
@@ -68,9 +73,9 @@ function wtask()
 			widget = wibox.widget.textbox,
 			set_taskname = function(self, val)
 				print("1:"..val)
-				self.text  = val
-			end,
-		},
+				self.text  = val                   --
+			end,                                   --
+		},                       -- Inner text widget
 		id		= "taskcontainer",
 		border_color = "#111111",
 		color		 = "#00FF00",
@@ -102,11 +107,12 @@ function wtask()
 						end
 					end
 					self.max_value	=	worktime
-					print("!!!",worktime)
 					if type(val["end"]) == "string" then	-- Not active
-						worktime		=	math.floor(os.difftime(zulu2time(val["end"]),zulu2time(val.start))/60)
-						self.color		=	"#00FF00"
-						self.taskname.markup = string.format("<span foreground='grey'>%s %3d/%3d </span>",title,self.v,worktime)
+						worktime		=	math.floor(os.difftime(zulu2time(val["end"]),zulu2time(val.start))*factor/60)  -- Time to complete the last active task
+						self.v = math.floor(os.difftime(os.time(os.date("!*t",os.time())),zulu2time(val["end"]))/60)
+						print("WT: ",worktime,factor,self.v)
+						self.color		=	'#00FF00' --- tagcolor["rest"]
+						self.taskname.markup = string.format("<span strikethrough='true' strikethrough_color='#AAAAAA' foreground='grey'>%s %3d/%3d </span>",title,self.v,worktime)
 					else									-- Active 
 						self.taskname.markup = string.format("<span foreground='"..(string.gsub(self.color,"[0-4]","6")).."'>%s %3d/%3d </span>",title,self.v,worktime)
 					end
