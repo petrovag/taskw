@@ -61,7 +61,7 @@ function wtask(args)
 	local factor = 15/60.
 	if args ~= nil then
 		if args["worktime"] ~= nil then worktime = args["worktime"] end
-		if args["factor"] ~= nil then worktime = args["factor"] end
+		if args["factor"] ~= nil then factor = args["factor"] end
 	end
 	local widget = wibox.widget{	 
 		{   
@@ -107,20 +107,28 @@ function wtask(args)
 						end
 					end
 					self.max_value	=	worktime
+					print("!!!",worktime)
 					if type(val["end"]) == "string" then	-- Not active
-						worktime		=	math.floor(os.difftime(zulu2time(val["end"]),zulu2time(val.start))*factor/60)  -- Time to complete the last active task
+						worktime = math.floor(os.difftime(zulu2time(val["end"]),zulu2time(val.start))/60)  -- Time to complete the last active task
+						time = worktime*factor
 						self.v = math.floor(os.difftime(os.time(os.date("!*t",os.time())),zulu2time(val["end"]))/60)
-						print("WT: ",worktime,factor,self.v)
+						print("WT: ",time,factor,self.v)
 						self.color		=	'#00FF00' --- tagcolor["rest"]
-						self.taskname.markup = string.format("<span strikethrough='true' strikethrough_color='#AAAAAA' foreground='grey'>%s %3d/%3d </span>",title,self.v,worktime)
+ 						local attr = "strikethrough='true' strikethrough_color='#AAAAAA'"
+						if self.v > wt then
+							self.taskname.markup = string.format("<span foreground='white' "..attr.." background='red' weight='heavy'>%3d/%3d </span>",self.v,time)
+						else
+							self.taskname.markup = string.format("<span foreground='grey' "..attr..">%s %3d/%3d </span>",title,self.v,time)
+						end
 					else									-- Active 
-						self.taskname.markup = string.format("<span foreground='"..(string.gsub(self.color,"[0-4]","6")).."'>%s %3d/%3d </span>",title,self.v,worktime)
+						time = worktime
+						self.taskname.markup = string.format("<span foreground='"..(string.gsub(self.color,"[0-4]","6")).."'>%s %3d/%3d </span>",title,self.v,time)
 					end
 				else
-					self.taskname.markup = string.format("<span foreground='grey'>%s %3d/%3d </span> ",title,self.v,worktime)
-					self.max_value	= worktime
+					self.taskname.markup = string.format("<span foreground='grey'>%s %3d/%3d </span> ",title,self.v,time)
 				end
 				self.value = self.v
+				self.max_value = time
 		end,
 	}
 
